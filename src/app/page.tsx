@@ -1,35 +1,15 @@
 import Image from "next/image";
 
-const products = [
-  {
-    name: "Column Leather Bag",
-    category: "Hand-finished calfskin",
-    price: "$1,480",
-    image: "/product-column-bag.jpg",
-    alt: "Structured tan leather handbag",
-  },
-  {
-    name: "Sculpted Court",
-    category: "Nappa leather",
-    price: "$790",
-    image: "/product-sculpted-court.jpg",
-    alt: "Black sculptural high heel shoe",
-  },
-  {
-    name: "Solstice Frame",
-    category: "Acetate sunglasses",
-    price: "$460",
-    image: "/product-solstice-frame.jpg",
-    alt: "Dark sunglasses on a warm neutral surface",
-  },
-  {
-    name: "Arc Mini Bag",
-    category: "Grained leather",
-    price: "$1,250",
-    image: "/product-arc-mini.jpg",
-    alt: "Small cream leather handbag",
-  },
-] as const;
+import { getHomepageProducts } from "@/db/queries/products";
+
+export const dynamic = "force-dynamic";
+
+function formatPrice(priceInCents: number, currency: string) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+  }).format(priceInCents / 100);
+}
 
 const footerLinks = {
   Services: ["Contact us", "Shipping & returns", "Care guide", "Book an appointment"],
@@ -54,7 +34,9 @@ function BagIcon() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const products = await getHomepageProducts();
+
   return (
     <main>
       <header className="absolute inset-x-0 top-0 z-30 text-white">
@@ -180,31 +162,39 @@ export default function Home() {
             <a href="#" className="link-nav w-fit">Shop all new arrivals</a>
           </div>
 
-          <div className="product-grid">
-            {products.map((product, index) => (
-              <article key={product.name}>
-                <a href="#" aria-label={`View ${product.name}`} className="group block no-underline">
-                  <div className="media-frame aspect-[4/5]">
-                    <Image
-                      src={product.image}
-                      alt={product.alt}
-                      fill
-                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                      className="object-cover transition duration-700 ease-out group-hover:scale-[1.025]"
-                    />
-                    {index === 0 && <span className="type-label absolute left-4 top-4 bg-surface px-3 py-2">New</span>}
-                  </div>
-                  <div className="mt-5 flex items-start justify-between gap-4">
-                    <div>
-                      <h3 className="font-medium">{product.name}</h3>
-                      <p className="mt-1 text-sm text-ink-muted">{product.category}</p>
+          {products.length > 0 ? (
+            <div className="product-grid">
+              {products.map((product) => (
+                <article key={product.id}>
+                  <a href="#" aria-label={`View ${product.name}`} className="group block no-underline">
+                    <div className="media-frame aspect-[4/5]">
+                      <Image
+                        src={product.imageSrc}
+                        alt={product.imageAlt}
+                        fill
+                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                        className="object-cover transition duration-700 ease-out group-hover:scale-[1.025]"
+                      />
+                      {product.isSoldOut ? (
+                        <span className="type-label absolute left-4 top-4 bg-surface px-3 py-2">Sold out</span>
+                      ) : product.isNew ? (
+                        <span className="type-label absolute left-4 top-4 bg-surface px-3 py-2">New</span>
+                      ) : null}
                     </div>
-                    <p className="shrink-0 text-sm">{product.price}</p>
-                  </div>
-                </a>
-              </article>
-            ))}
-          </div>
+                    <div className="mt-5 flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="font-medium">{product.name}</h3>
+                        <p className="mt-1 text-sm text-ink-muted">{product.subtitle}</p>
+                      </div>
+                      <p className="shrink-0 text-sm">{formatPrice(product.priceInCents, product.currency)}</p>
+                    </div>
+                  </a>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-ink-muted">New arrivals are being prepared.</p>
+          )}
         </div>
       </section>
 

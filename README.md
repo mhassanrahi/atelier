@@ -7,10 +7,13 @@ Minimal eCommerce application foundation built with Next.js, TypeScript, Tailwin
 1. Copy `.env.example` to `.env.local`.
 2. Add a Neon `DATABASE_URL` and a random `BETTER_AUTH_SECRET`.
 3. Install dependencies with `npm install`.
-4. Start the development server with `npm run dev`.
+4. Apply database migrations with `npm run db:migrate`.
+5. Seed the initial catalog once with `npm run db:seed`.
+6. Start the development server with `npm run dev`.
 
 ## Scripts
 
+- `npm run db:seed` — insert the initial catalog without overwriting existing stock
 - `npm run dev` — start Next.js in development mode
 - `npm run build` — create a production build
 - `npm run lint` — run ESLint
@@ -23,7 +26,8 @@ Minimal eCommerce application foundation built with Next.js, TypeScript, Tailwin
 ## Integration points
 
 - `src/db/index.ts` creates the Neon-backed Drizzle client.
-- `src/db/schema.ts` is intentionally empty until database tables are designed.
+- `src/db/schema.ts` defines the categories, products, and stock tables.
+- `src/db/queries/products.ts` contains the server-only homepage catalog query.
 - `src/lib/auth.ts` creates the Better Auth server instance with the Drizzle adapter.
 - `src/app/api/auth/[...all]/route.ts` mounts the Better Auth API handler.
 - `drizzle.config.ts` configures Drizzle Kit for Neon Postgres.
