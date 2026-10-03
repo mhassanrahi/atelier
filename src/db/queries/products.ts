@@ -3,7 +3,13 @@ import "server-only";
 import { and, asc, eq, isNotNull, sql } from "drizzle-orm";
 
 import { db } from "@/db";
-import { categories, productImages, products, stock } from "@/db/schema";
+import {
+  categories,
+  productDetails,
+  productImages,
+  products,
+  stock,
+} from "@/db/schema";
 
 export type HomepageProduct = {
   id: string;
@@ -25,6 +31,10 @@ export type HomepageProduct = {
 
 export type ProductDetail = Omit<HomepageProduct, "imageSrc" | "imageAlt"> & {
   sku: string;
+  description: string;
+  details: string[];
+  material: string;
+  care: string;
   images: {
     src: string;
     alt: string;
@@ -115,6 +125,9 @@ export async function getProductBySlug(
       sku: products.sku,
       name: products.name,
       subtitle: products.subtitle,
+      description: products.description,
+      material: products.material,
+      care: products.care,
       categoryName: categories.name,
       categorySlug: categories.slug,
       priceInCents: products.priceInCents,
@@ -132,15 +145,22 @@ export async function getProductBySlug(
     return undefined;
   }
 
-  const images = await db
-    .select({
-      src: productImages.src,
-      alt: productImages.alt,
-      position: productImages.position,
-    })
-    .from(productImages)
-    .where(eq(productImages.productId, product.id))
-    .orderBy(asc(productImages.position));
+  const [images, details] = await Promise.all([
+    db
+      .select({
+        src: productImages.src,
+        alt: productImages.alt,
+        position: productImages.position,
+      })
+      .from(productImages)
+      .where(eq(productImages.productId, product.id))
+      .orderBy(asc(productImages.position)),
+    db
+      .select({ content: productDetails.content })
+      .from(productDetails)
+      .where(eq(productDetails.productId, product.id))
+      .orderBy(asc(productDetails.position)),
+  ]);
 
   return {
     id: product.id,
@@ -148,6 +168,10 @@ export async function getProductBySlug(
     sku: product.sku,
     name: product.name,
     subtitle: product.subtitle,
+    description: product.description,
+    details: details.map((detail) => detail.content),
+    material: product.material,
+    care: product.care,
     category: {
       name: product.categoryName,
       slug: product.categorySlug,

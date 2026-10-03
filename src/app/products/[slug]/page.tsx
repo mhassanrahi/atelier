@@ -13,53 +13,6 @@ export const dynamic = "force-dynamic";
 
 const getProduct = cache(getProductBySlug);
 
-const productStories: Record<
-  string,
-  {
-    description: string;
-    details: string[];
-    material: string;
-    care: string;
-  }
-> = {
-  "column-leather-bag": {
-    description:
-      "A study in clean geometry, the Column is shaped with a softly structured body and a precise top handle. Its quiet profile is designed to move easily from day into evening.",
-    details: ["Hand-finished edges", "Interior slip pocket", "Protective metal feet"],
-    material: "Calfskin leather with a smooth leather lining and brushed metal hardware.",
-    care: "Store in its dust bag and keep away from prolonged sunlight, water, and abrasive surfaces.",
-  },
-  "sculpted-court": {
-    description:
-      "A classic court shoe redrawn with a fluid heel and an elongated line. Supple nappa leather follows the foot while the sculpted base gives the silhouette its architectural character.",
-    details: ["Sculpted heel", "Leather sole", "Hand-finished upper"],
-    material: "Nappa leather upper, leather lining, and a hand-finished leather sole.",
-    care: "Wipe gently with a soft, dry cloth and store with tissue in its dust bag between wears.",
-  },
-  "solstice-frame": {
-    description:
-      "Bold in proportion and restrained in detail, the Solstice frame pairs a softened rectangular shape with precisely beveled edges for a considered everyday statement.",
-    details: ["Beveled profile", "Tinted lenses", "Polished metal core"],
-    material: "Polished acetate with tinted lenses and metal-reinforced temples.",
-    care: "Clean with the supplied lens cloth and store in the protective case when not in use.",
-  },
-  "arc-mini-bag": {
-    description:
-      "Compact and gently curved, the Arc Mini balances a sculptural outline with an easy crossbody scale. A tactile grained finish makes it suited to everyday wear.",
-    details: ["Adjustable strap", "Magnetic closure", "Interior card pocket"],
-    material: "Grained leather with a smooth leather lining and tonal metal hardware.",
-    care: "Store in its dust bag and avoid contact with water, oils, and richly dyed fabrics.",
-  },
-};
-
-const fallbackStory = {
-  description:
-    "A considered Atelier object, refined through proportion, material, and careful finishing. Designed for daily use and made to remain relevant beyond the season.",
-  details: ["Designed in Berlin", "Responsibly sourced materials", "Made in small runs"],
-  material: "Selected for character, longevity, and a graceful patina over time.",
-  care: "Treat with care and store in a cool, dry place between uses.",
-};
-
 function formatPrice(priceInCents: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -111,7 +64,6 @@ export default async function ProductPage(
     notFound();
   }
 
-  const story = productStories[product.slug] ?? fallbackStory;
   const relatedProducts = (await getHomepageProducts())
     .filter((item) => item.id !== product.id)
     .slice(0, 3);
@@ -214,15 +166,17 @@ export default async function ProductPage(
             <p className="mt-7 text-lg">{formatPrice(product.priceInCents, product.currency)}</p>
 
             <div className="rule mt-9 pt-8">
-              <p className="type-body-lg max-w-[34rem] text-ink-muted">{story.description}</p>
-              <ul className="mt-7 space-y-2 text-sm">
-                {story.details.map((detail) => (
-                  <li key={detail} className="flex gap-3">
-                    <span aria-hidden="true">—</span>
-                    <span>{detail}</span>
-                  </li>
-                ))}
-              </ul>
+              <p className="type-body-lg max-w-[34rem] text-ink-muted">{product.description}</p>
+              {product.details.length > 0 ? (
+                <ul className="mt-7 space-y-2 text-sm">
+                  {product.details.map((detail) => (
+                    <li key={detail} className="flex gap-3">
+                      <span aria-hidden="true">—</span>
+                      <span>{detail}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
 
             <div className="mt-9 border border-line bg-surface p-5">
@@ -241,21 +195,21 @@ export default async function ProductPage(
               <details className="group py-5">
                 <summary className="type-label flex list-none items-center justify-between gap-6">
                   Materials
-                  <span className="text-lg font-normal group-open:rotate-45" aria-hidden="true">+</span>
+                  <span className="text-lg font-normal group-open:rotate-45 cursor-pointer" aria-hidden="true">+</span>
                 </summary>
-                <p className="max-w-[32rem] pb-2 pt-4 text-sm leading-relaxed text-ink-muted">{story.material}</p>
+                <p className="max-w-[32rem] pb-2 pt-4 text-sm leading-relaxed text-ink-muted">{product.material}</p>
               </details>
               <details className="group py-5">
                 <summary className="type-label flex list-none items-center justify-between gap-6">
                   Care guide
-                  <span className="text-lg font-normal group-open:rotate-45" aria-hidden="true">+</span>
+                  <span className="text-lg font-normal group-open:rotate-45 cursor-pointer" aria-hidden="true">+</span>
                 </summary>
-                <p className="max-w-[32rem] pb-2 pt-4 text-sm leading-relaxed text-ink-muted">{story.care}</p>
+                <p className="max-w-[32rem] pb-2 pt-4 text-sm leading-relaxed text-ink-muted">{product.care}</p>
               </details>
               <details className="group py-5">
                 <summary className="type-label flex list-none items-center justify-between gap-6">
                   Delivery & returns
-                  <span className="text-lg font-normal group-open:rotate-45" aria-hidden="true">+</span>
+                  <span className="text-lg font-normal group-open:rotate-45 cursor-pointer" aria-hidden="true">+</span>
                 </summary>
                 <p className="max-w-[32rem] pb-2 pt-4 text-sm leading-relaxed text-ink-muted">
                   Complimentary delivery and returns will be available when ordering launches.

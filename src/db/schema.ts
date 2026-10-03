@@ -5,6 +5,7 @@ import {
   index,
   integer,
   pgTable,
+  text,
   timestamp,
   uniqueIndex,
   uuid,
@@ -34,6 +35,9 @@ export const products = pgTable(
     name: varchar("name", { length: 160 }).notNull(),
     slug: varchar("slug", { length: 160 }).notNull().unique(),
     subtitle: varchar("subtitle", { length: 200 }).notNull(),
+    description: text("description").notNull(),
+    material: text("material").notNull(),
+    care: text("care").notNull(),
     priceInCents: integer("price_in_cents").notNull(),
     currency: varchar("currency", { length: 3 }).default("USD").notNull(),
     isPublished: boolean("is_published").default(false).notNull(),
@@ -79,6 +83,26 @@ export const productImages = pgTable(
   ],
 );
 
+export const productDetails = pgTable(
+  "product_details",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    content: varchar("content", { length: 200 }).notNull(),
+    position: integer("position").notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("product_details_product_position_unique").on(
+      table.productId,
+      table.position,
+    ),
+    check("product_details_position_positive", sql`${table.position} > 0`),
+  ],
+);
+
 export const stock = pgTable(
   "stock",
   {
@@ -103,12 +127,20 @@ export const productsRelations = relations(products, ({ many, one }) => ({
     references: [categories.id],
   }),
   images: many(productImages),
+  details: many(productDetails),
   stock: one(stock),
 }));
 
 export const productImagesRelations = relations(productImages, ({ one }) => ({
   product: one(products, {
     fields: [productImages.productId],
+    references: [products.id],
+  }),
+}));
+
+export const productDetailsRelations = relations(productDetails, ({ one }) => ({
+  product: one(products, {
+    fields: [productDetails.productId],
     references: [products.id],
   }),
 }));
@@ -126,5 +158,7 @@ export type Product = typeof products.$inferSelect;
 export type NewProduct = typeof products.$inferInsert;
 export type ProductImage = typeof productImages.$inferSelect;
 export type NewProductImage = typeof productImages.$inferInsert;
+export type ProductDetail = typeof productDetails.$inferSelect;
+export type NewProductDetail = typeof productDetails.$inferInsert;
 export type Stock = typeof stock.$inferSelect;
 export type NewStock = typeof stock.$inferInsert;

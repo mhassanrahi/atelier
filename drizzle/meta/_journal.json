@@ -15,6 +15,13 @@
       "when": 1791029031929,
       "tag": "0001_broad_nekra",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791036693883,
+      "tag": "0002_lying_beyonder",
+      "breakpoints": true
     }
   ]
 }
