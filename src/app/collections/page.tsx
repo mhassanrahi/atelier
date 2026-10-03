@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { SiteFooter } from "@/components/site-footer";
 import { getCollectionCatalog } from "@/db/queries/products";
 
 export const dynamic = "force-dynamic";
@@ -12,12 +13,6 @@ export const metadata: Metadata = {
   description:
     "Explore Atelier's collection of bags, footwear, and eyewear, shaped by modern form and enduring craft.",
 };
-
-const footerLinks = {
-  Services: ["Contact us", "Shipping & returns", "Care guide", "Book an appointment"],
-  Atelier: ["Our story", "Craftsmanship", "Journal", "Careers"],
-  Legal: ["Privacy", "Terms", "Accessibility", "Cookies"],
-} as const;
 
 function formatPrice(priceInCents: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -247,30 +242,7 @@ export default async function CollectionsPage(
         </div>
       </section>
 
-      <footer id="footer" className="bg-inverse text-inverse-ink">
-        <div className="page-shell py-14 md:py-20">
-          <div className="grid gap-14 border-b border-white/20 pb-16 md:grid-cols-[1.2fr_2fr]">
-            <div>
-              <p className="font-display text-3xl tracking-[0.16em]">ATELIER</p>
-              <p className="mt-5 max-w-[24rem] text-sm leading-relaxed text-white/60">A study in modern form, made with enduring materials and an uncompromising eye.</p>
-            </div>
-            <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
-              {Object.entries(footerLinks).map(([group, links]) => (
-                <div key={group}>
-                  <h2 className="type-label mb-5 text-white/50">{group}</h2>
-                  <ul className="space-y-3 text-sm">
-                    {links.map((link) => <li key={link}><span className="text-white/85">{link}</span></li>)}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="flex flex-col gap-4 pt-7 text-[0.6875rem] uppercase tracking-[0.12em] text-white/45 sm:flex-row sm:items-center sm:justify-between">
-            <p>© 2026 Atelier Store</p>
-            <div className="flex flex-wrap gap-6"><span>Instagram</span><span>Pinterest</span><span>English / USD</span></div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

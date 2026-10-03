@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 
+import { SiteFooter } from "@/components/site-footer";
 import {
   getHomepageProducts,
   getProductBySlug,
@@ -26,14 +27,6 @@ function BagIcon() {
     <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none">
       <path d="M5.5 8.5h13l-1 11h-11l-1-11Z" stroke="currentColor" strokeWidth="1.35" />
       <path d="M9 9V6.5a3 3 0 0 1 6 0V9" stroke="currentColor" strokeWidth="1.35" />
-    </svg>
-  );
-}
-
-function ArrowIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-4" fill="none">
-      <path d="M4 12h15M14 6l6 6-6 6" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );
 }
@@ -276,34 +269,7 @@ export default async function ProductPage(
         </div>
       </section>
 
-      <footer id="footer" className="bg-inverse text-inverse-ink">
-        <div className="page-shell py-14 md:py-20">
-          <div className="grid gap-14 border-b border-white/20 pb-16 md:grid-cols-[1.2fr_2fr]">
-            <div>
-              <p className="font-display text-3xl tracking-[0.16em]">ATELIER</p>
-              <p className="mt-5 max-w-[24rem] text-sm leading-relaxed text-white/60">A study in modern form, made with enduring materials and an uncompromising eye.</p>
-            </div>
-            <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
-              <div>
-                <h2 className="type-label mb-5 text-white/50">Services</h2>
-                <ul className="space-y-3 text-sm text-white/85"><li>Contact us</li><li>Shipping & returns</li><li>Care guide</li></ul>
-              </div>
-              <div>
-                <h2 className="type-label mb-5 text-white/50">Atelier</h2>
-                <ul className="space-y-3 text-sm text-white/85"><li>Our story</li><li>Craftsmanship</li><li>Journal</li></ul>
-              </div>
-              <div>
-                <h2 className="type-label mb-5 text-white/50">Continue</h2>
-                <Link href="/" className="button border border-white/50 text-white hover:bg-white hover:text-ink">Return home <ArrowIcon /></Link>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-4 pt-7 text-[0.6875rem] uppercase tracking-[0.12em] text-white/45 sm:flex-row sm:items-center sm:justify-between">
-            <p>© 2026 Atelier Store</p>
-            <p>English / USD</p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }
