@@ -5,6 +5,7 @@ import { drizzle } from "drizzle-orm/neon-http";
 
 import {
   categories,
+  collectionEditorials,
   productDetails,
   productImages,
   products,
@@ -23,6 +24,53 @@ const categorySeed = [
   { name: "Bags", slug: "bags" },
   { name: "Footwear", slug: "footwear" },
   { name: "Eyewear", slug: "eyewear" },
+] as const;
+
+const collectionEditorialSeed = [
+  {
+    categorySlug: null,
+    eyebrow: "Autumn / Winter 2026",
+    title: "The collection",
+    description:
+      "A considered study in shape, texture, and utility. Each object is designed to feel distinct today and remain relevant well beyond the season.",
+    imageSrc: "/collection-women.jpg",
+    imageAlt: "Woman in sunglasses holding shopping bags",
+    imagePosition: "center",
+    imageCaption: "Atelier study — 2026",
+  },
+  {
+    categorySlug: "bags",
+    eyebrow: "Collection 01 — Bags",
+    title: "Carried with intention",
+    description:
+      "Sculptural companions grounded in function, finished by hand and proportioned for the rhythm of every day.",
+    imageSrc: "/product-column-bag.jpg",
+    imageAlt: "Structured teal leather handbag in an editorial still life",
+    imagePosition: "center 62%",
+    imageCaption: "Atelier study — 2026",
+  },
+  {
+    categorySlug: "footwear",
+    eyebrow: "Collection 02 — Footwear",
+    title: "A study in movement",
+    description:
+      "Familiar forms redrawn with fluid lines, tactile leathers, and a quiet sense of architecture.",
+    imageSrc: "/product-sculpted-court.jpg",
+    imageAlt: "Floral-print high-heeled shoes against a blue background",
+    imagePosition: "center",
+    imageCaption: "Atelier study — 2026",
+  },
+  {
+    categorySlug: "eyewear",
+    eyebrow: "Collection 03 — Eyewear",
+    title: "A different point of view",
+    description:
+      "Expressive frames balanced by precise details, made to bring clarity and character to the everyday.",
+    imageSrc: "/product-solstice-frame.jpg",
+    imageAlt: "Round sunglasses with dark green lenses on a pale surface",
+    imagePosition: "center",
+    imageCaption: "Atelier study — 2026",
+  },
 ] as const;
 
 const productSeed = [
@@ -143,6 +191,26 @@ async function seedCatalog() {
     categoryIds.set(category.slug, savedCategory.id);
   }
 
+  for (const editorial of collectionEditorialSeed) {
+    const { categorySlug, ...editorialValues } = editorial;
+    const categoryId = categorySlug ? categoryIds.get(categorySlug) : null;
+
+    if (categorySlug && !categoryId) {
+      throw new Error(`Missing category for collection editorial: ${categorySlug}`);
+    }
+
+    await seedDb
+      .insert(collectionEditorials)
+      .values({ ...editorialValues, categoryId })
+      .onConflictDoUpdate({
+        target: collectionEditorials.categoryId,
+        set: {
+          ...editorialValues,
+          updatedAt: new Date(),
+        },
+      });
+  }
+
   for (const product of productSeed) {
     const { categorySlug, details, images, ...productValues } = product;
     const categoryId = categoryIds.get(categorySlug);
@@ -196,7 +264,7 @@ async function seedCatalog() {
   }
 
   console.log(
-    "Catalog seed complete: 3 categories, 4 products, images, and details are ready.",
+    "Catalog seed complete: 3 categories, 4 collection editorials, 4 products, images, and details are ready.",
   );
 }
 

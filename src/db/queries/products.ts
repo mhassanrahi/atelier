@@ -1,10 +1,11 @@
 import "server-only";
 
-import { and, asc, eq, isNotNull, sql } from "drizzle-orm";
+import { and, asc, eq, isNotNull, isNull, or, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
   categories,
+  collectionEditorials,
   productDetails,
   productImages,
   products,
@@ -50,6 +51,15 @@ export type CollectionCategory = {
 export type CollectionCatalog = {
   activeCategory?: CollectionCategory;
   categories: CollectionCategory[];
+  editorial: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    imageSrc: string;
+    imageAlt: string;
+    imagePosition: string;
+    imageCaption: string;
+  };
   products: HomepageProduct[];
 };
 
@@ -188,59 +198,111 @@ export async function getProductBySlug(
 export async function getCollectionCatalog(
   categorySlug?: string,
 ): Promise<CollectionCatalog | undefined> {
-  const catalogCategories = await db
-    .select({ name: categories.name, slug: categories.slug })
+  const categoryRows = await db
+    .select({ id: categories.id, name: categories.name, slug: categories.slug })
     .from(categories)
     .orderBy(asc(categories.name));
 
-  const activeCategory = categorySlug
-    ? catalogCategories.find((category) => category.slug === categorySlug)
+  const activeCategoryRow = categorySlug
+    ? categoryRows.find((category) => category.slug === categorySlug)
     : undefined;
 
-  if (categorySlug && !activeCategory) {
+  if (categorySlug && !activeCategoryRow) {
     return undefined;
   }
+
+  const catalogCategories = categoryRows.map(({ name, slug }) => ({ name, slug }));
+  const activeCategory = activeCategoryRow
+    ? { name: activeCategoryRow.name, slug: activeCategoryRow.slug }
+    : undefined;
 
   const stockQuantity = sql<number>`coalesce(${stock.quantity}, 0)`.mapWith(
     Number,
   );
   const conditions = [eq(products.isPublished, true)];
 
-  if (activeCategory) {
-    conditions.push(eq(categories.slug, activeCategory.slug));
+  if (activeCategoryRow) {
+    conditions.push(eq(categories.id, activeCategoryRow.id));
   }
 
-  const rows = await db
-    .select({
-      id: products.id,
-      slug: products.slug,
-      name: products.name,
-      subtitle: products.subtitle,
-      categoryName: categories.name,
-      categorySlug: categories.slug,
-      priceInCents: products.priceInCents,
-      currency: products.currency,
-      imageSrc: productImages.src,
-      imageAlt: productImages.alt,
-      isNew: products.isNew,
-      stockQuantity,
-    })
-    .from(products)
-    .innerJoin(categories, eq(products.categoryId, categories.id))
-    .innerJoin(
-      productImages,
-      and(
-        eq(products.id, productImages.productId),
-        eq(productImages.position, 1),
+  const [rows, editorialRows] = await Promise.all([
+    db
+      .select({
+        id: products.id,
+        slug: products.slug,
+        name: products.name,
+        subtitle: products.subtitle,
+        categoryName: categories.name,
+        categorySlug: categories.slug,
+        priceInCents: products.priceInCents,
+        currency: products.currency,
+        imageSrc: productImages.src,
+        imageAlt: productImages.alt,
+        isNew: products.isNew,
+        stockQuantity,
+      })
+      .from(products)
+      .innerJoin(categories, eq(products.categoryId, categories.id))
+      .innerJoin(
+        productImages,
+        and(
+          eq(products.id, productImages.productId),
+          eq(productImages.position, 1),
+        ),
+      )
+      .leftJoin(stock, eq(products.id, stock.productId))
+      .where(and(...conditions))
+      .orderBy(asc(products.name)),
+    db
+      .select({
+        categoryId: collectionEditorials.categoryId,
+        eyebrow: collectionEditorials.eyebrow,
+        title: collectionEditorials.title,
+        description: collectionEditorials.description,
+        imageSrc: collectionEditorials.imageSrc,
+        imageAlt: collectionEditorials.imageAlt,
+        imagePosition: collectionEditorials.imagePosition,
+        imageCaption: collectionEditorials.imageCaption,
+      })
+      .from(collectionEditorials)
+      .where(
+        activeCategoryRow
+          ? or(
+            eq(collectionEditorials.categoryId, activeCategoryRow.id),
+            isNull(collectionEditorials.categoryId),
+          )
+          : isNull(collectionEditorials.categoryId),
       ),
-    )
-    .leftJoin(stock, eq(products.id, stock.productId))
-    .where(and(...conditions))
-    .orderBy(asc(products.name));
+  ]);
+
+  const defaultEditorial = editorialRows.find(
+    (editorial) => editorial.categoryId === null,
+  );
+
+  if (!defaultEditorial) {
+    throw new Error("Default collection editorial is not configured.");
+  }
+
+  const selectedEditorial = activeCategoryRow
+    ? editorialRows.find(
+      (editorial) => editorial.categoryId === activeCategoryRow.id,
+    ) ?? defaultEditorial
+    : defaultEditorial;
+
+  const editorial = {
+    eyebrow: selectedEditorial.eyebrow,
+    title: selectedEditorial.title,
+    description: selectedEditorial.description,
+    imageSrc: selectedEditorial.imageSrc,
+    imageAlt: selectedEditorial.imageAlt,
+    imagePosition: selectedEditorial.imagePosition,
+    imageCaption: selectedEditorial.imageCaption,
+  };
 
   return {
     activeCategory,
     categories: catalogCategories,
+    editorial,
     products: rows.map((product) => ({
       id: product.id,
       slug: product.slug,

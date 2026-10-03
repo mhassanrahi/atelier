@@ -7,6 +7,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
   uniqueIndex,
   uuid,
   varchar,
@@ -23,6 +24,31 @@ export const categories = pgTable("categories", {
   slug: varchar("slug", { length: 100 }).notNull().unique(),
   ...timestamps,
 });
+
+export const collectionEditorials = pgTable(
+  "collection_editorials",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    categoryId: uuid("category_id").references(() => categories.id, {
+      onDelete: "cascade",
+    }),
+    eyebrow: varchar("eyebrow", { length: 160 }).notNull(),
+    title: varchar("title", { length: 160 }).notNull(),
+    description: text("description").notNull(),
+    imageSrc: varchar("image_src", { length: 500 }).notNull(),
+    imageAlt: varchar("image_alt", { length: 300 }).notNull(),
+    imagePosition: varchar("image_position", { length: 100 })
+      .default("center")
+      .notNull(),
+    imageCaption: varchar("image_caption", { length: 160 }).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    unique("collection_editorials_category_id_unique")
+      .on(table.categoryId)
+      .nullsNotDistinct(),
+  ],
+);
 
 export const products = pgTable(
   "products",
@@ -117,9 +143,20 @@ export const stock = pgTable(
   ],
 );
 
-export const categoriesRelations = relations(categories, ({ many }) => ({
+export const categoriesRelations = relations(categories, ({ many, one }) => ({
   products: many(products),
+  collectionEditorial: one(collectionEditorials),
 }));
+
+export const collectionEditorialsRelations = relations(
+  collectionEditorials,
+  ({ one }) => ({
+    category: one(categories, {
+      fields: [collectionEditorials.categoryId],
+      references: [categories.id],
+    }),
+  }),
+);
 
 export const productsRelations = relations(products, ({ many, one }) => ({
   category: one(categories, {
@@ -154,6 +191,8 @@ export const stockRelations = relations(stock, ({ one }) => ({
 
 export type Category = typeof categories.$inferSelect;
 export type NewCategory = typeof categories.$inferInsert;
+export type CollectionEditorial = typeof collectionEditorials.$inferSelect;
+export type NewCollectionEditorial = typeof collectionEditorials.$inferInsert;
 export type Product = typeof products.$inferSelect;
 export type NewProduct = typeof products.$inferInsert;
 export type ProductImage = typeof productImages.$inferSelect;

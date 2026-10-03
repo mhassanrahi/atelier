@@ -13,52 +13,6 @@ export const metadata: Metadata = {
     "Explore Atelier's collection of bags, footwear, and eyewear, shaped by modern form and enduring craft.",
 };
 
-const editorialByCategory: Record<
-  string,
-  {
-    eyebrow: string;
-    title: string;
-    description: string;
-    image: string;
-    imageAlt: string;
-    position?: string;
-  }
-> = {
-  all: {
-    eyebrow: "Autumn / Winter 2026",
-    title: "The collection",
-    description:
-      "A considered study in shape, texture, and utility. Each object is designed to feel distinct today and remain relevant well beyond the season.",
-    image: "/collection-women.jpg",
-    imageAlt: "Woman in sunglasses holding shopping bags",
-  },
-  bags: {
-    eyebrow: "Collection 01 — Bags",
-    title: "Carried with intention",
-    description:
-      "Sculptural companions grounded in function, finished by hand and proportioned for the rhythm of every day.",
-    image: "/product-column-bag.jpg",
-    imageAlt: "Structured teal leather handbag in an editorial still life",
-    position: "object-[center_62%]",
-  },
-  footwear: {
-    eyebrow: "Collection 02 — Footwear",
-    title: "A study in movement",
-    description:
-      "Familiar forms redrawn with fluid lines, tactile leathers, and a quiet sense of architecture.",
-    image: "/product-sculpted-court.jpg",
-    imageAlt: "Floral-print high-heeled shoes against a blue background",
-  },
-  eyewear: {
-    eyebrow: "Collection 03 — Eyewear",
-    title: "A different point of view",
-    description:
-      "Expressive frames balanced by precise details, made to bring clarity and character to the everyday.",
-    image: "/product-solstice-frame.jpg",
-    imageAlt: "Round sunglasses with dark green lenses on a pale surface",
-  },
-};
-
 const footerLinks = {
   Services: ["Contact us", "Shipping & returns", "Care guide", "Book an appointment"],
   Atelier: ["Our story", "Craftsmanship", "Journal", "Careers"],
@@ -105,8 +59,7 @@ export default async function CollectionsPage(
     notFound();
   }
 
-  const editorial =
-    editorialByCategory[catalog.activeCategory?.slug ?? "all"] ?? editorialByCategory.all;
+  const editorial = catalog.editorial;
   const collectionName = catalog.activeCategory?.name ?? "All pieces";
 
   return (
@@ -166,16 +119,17 @@ export default async function CollectionsPage(
       <section className="page-shell">
         <div className="media-frame aspect-[4/5] md:aspect-[16/7]">
           <Image
-            src={editorial.image}
+            src={editorial.imageSrc}
             alt={editorial.imageAlt}
             fill
             loading="eager"
             fetchPriority="high"
             sizes="100vw"
-            className={`object-cover ${editorial.position ?? "object-center"}`}
+            className="object-cover"
+            style={{ objectPosition: editorial.imagePosition }}
           />
           <p className="type-label absolute bottom-5 right-5 bg-surface/90 px-3 py-2 text-ink md:bottom-7 md:right-7">
-            Atelier study — 2026
+            {editorial.imageCaption}
           </p>
         </div>
       </section>
