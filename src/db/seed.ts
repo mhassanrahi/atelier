@@ -3,7 +3,7 @@ import "dotenv/config";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 
-import { categories, products, stock } from "./schema";
+import { categories, productImages, products, stock } from "./schema";
 
 const databaseUrl = process.env.DATABASE_URL;
 
@@ -28,8 +28,13 @@ const productSeed = [
     subtitle: "Hand-finished calfskin",
     priceInCents: 148000,
     currency: "USD",
-    imageSrc: "/product-column-bag.jpg",
-    imageAlt: "Structured tan leather handbag",
+    images: [
+      {
+        src: "/product-column-bag.jpg",
+        alt: "Structured tan leather handbag",
+        position: 1,
+      },
+    ],
     isPublished: true,
     isNew: true,
     homepagePosition: 1,
@@ -42,8 +47,13 @@ const productSeed = [
     subtitle: "Nappa leather",
     priceInCents: 79000,
     currency: "USD",
-    imageSrc: "/product-sculpted-court.jpg",
-    imageAlt: "Black sculptural high heel shoe",
+    images: [
+      {
+        src: "/product-sculpted-court.jpg",
+        alt: "Black sculptural high heel shoe",
+        position: 1,
+      },
+    ],
     isPublished: true,
     isNew: false,
     homepagePosition: 2,
@@ -56,8 +66,13 @@ const productSeed = [
     subtitle: "Acetate sunglasses",
     priceInCents: 46000,
     currency: "USD",
-    imageSrc: "/product-solstice-frame.jpg",
-    imageAlt: "Dark sunglasses on a warm neutral surface",
+    images: [
+      {
+        src: "/product-solstice-frame.jpg",
+        alt: "Dark sunglasses on a warm neutral surface",
+        position: 1,
+      },
+    ],
     isPublished: true,
     isNew: false,
     homepagePosition: 3,
@@ -70,8 +85,13 @@ const productSeed = [
     subtitle: "Grained leather",
     priceInCents: 125000,
     currency: "USD",
-    imageSrc: "/product-arc-mini.jpg",
-    imageAlt: "Small cream leather handbag",
+    images: [
+      {
+        src: "/product-arc-mini.jpg",
+        alt: "Small cream leather handbag",
+        position: 1,
+      },
+    ],
     isPublished: true,
     isNew: false,
     homepagePosition: 4,
@@ -98,7 +118,7 @@ async function seedCatalog() {
   }
 
   for (const product of productSeed) {
-    const { categorySlug, ...productValues } = product;
+    const { categorySlug, images, ...productValues } = product;
     const categoryId = categoryIds.get(categorySlug);
 
     if (!categoryId) {
@@ -120,13 +140,24 @@ async function seedCatalog() {
       throw new Error(`Could not seed product: ${product.sku}`);
     }
 
+    for (const image of images) {
+      await seedDb
+        .insert(productImages)
+        .values({ ...image, productId: savedProduct.id })
+        .onConflictDoNothing({
+          target: [productImages.productId, productImages.position],
+        });
+    }
+
     await seedDb
       .insert(stock)
       .values({ productId: savedProduct.id, quantity: 10 })
       .onConflictDoNothing();
   }
 
-  console.log("Catalog seed complete: 3 categories and 4 products are ready.");
+  console.log(
+    "Catalog seed complete: 3 categories, 4 products, and their images are ready.",
+  );
 }
 
 seedCatalog().catch((error: unknown) => {

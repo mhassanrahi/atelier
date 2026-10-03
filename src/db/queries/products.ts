@@ -3,7 +3,7 @@ import "server-only";
 import { and, asc, eq, isNotNull, sql } from "drizzle-orm";
 
 import { db } from "@/db";
-import { categories, products, stock } from "@/db/schema";
+import { categories, productImages, products, stock } from "@/db/schema";
 
 export type HomepageProduct = {
   id: string;
@@ -38,13 +38,20 @@ export async function getHomepageProducts(): Promise<HomepageProduct[]> {
       categorySlug: categories.slug,
       priceInCents: products.priceInCents,
       currency: products.currency,
-      imageSrc: products.imageSrc,
-      imageAlt: products.imageAlt,
+      imageSrc: productImages.src,
+      imageAlt: productImages.alt,
       isNew: products.isNew,
       stockQuantity,
     })
     .from(products)
     .innerJoin(categories, eq(products.categoryId, categories.id))
+    .innerJoin(
+      productImages,
+      and(
+        eq(products.id, productImages.productId),
+        eq(productImages.position, 1),
+      ),
+    )
     .leftJoin(stock, eq(products.id, stock.productId))
     .where(
       and(
