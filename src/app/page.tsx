@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import { getHomepageProducts } from "@/db/queries/products";
 
@@ -166,7 +167,7 @@ export default async function Home() {
             <div className="product-grid">
               {products.map((product) => (
                 <article key={product.id}>
-                  <a href="#" aria-label={`View ${product.name}`} className="group block no-underline">
+                  <Link href={`/products/${product.slug}`} aria-label={`View ${product.name}`} className="group block no-underline">
                     <div className="media-frame aspect-[4/5]">
                       <Image
                         src={product.imageSrc}
@@ -188,7 +189,7 @@ export default async function Home() {
                       </div>
                       <p className="shrink-0 text-sm">{formatPrice(product.priceInCents, product.currency)}</p>
                     </div>
-                  </a>
+                  </Link>
                 </article>
               ))}
             </div>

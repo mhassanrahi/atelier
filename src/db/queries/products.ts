@@ -23,6 +23,15 @@ export type HomepageProduct = {
   isSoldOut: boolean;
 };
 
+export type ProductDetail = Omit<HomepageProduct, "imageSrc" | "imageAlt"> & {
+  sku: string;
+  images: {
+    src: string;
+    alt: string;
+    position: number;
+  }[];
+};
+
 export async function getHomepageProducts(): Promise<HomepageProduct[]> {
   const stockQuantity = sql<number>`coalesce(${stock.quantity}, 0)`.mapWith(
     Number,
@@ -79,4 +88,64 @@ export async function getHomepageProducts(): Promise<HomepageProduct[]> {
     stockQuantity: product.stockQuantity,
     isSoldOut: product.stockQuantity <= 0,
   }));
+}
+
+export async function getProductBySlug(
+  slug: string,
+): Promise<ProductDetail | undefined> {
+  const stockQuantity = sql<number>`coalesce(${stock.quantity}, 0)`.mapWith(
+    Number,
+  );
+
+  const [product] = await db
+    .select({
+      id: products.id,
+      slug: products.slug,
+      sku: products.sku,
+      name: products.name,
+      subtitle: products.subtitle,
+      categoryName: categories.name,
+      categorySlug: categories.slug,
+      priceInCents: products.priceInCents,
+      currency: products.currency,
+      isNew: products.isNew,
+      stockQuantity,
+    })
+    .from(products)
+    .innerJoin(categories, eq(products.categoryId, categories.id))
+    .leftJoin(stock, eq(products.id, stock.productId))
+    .where(and(eq(products.slug, slug), eq(products.isPublished, true)))
+    .limit(1);
+
+  if (!product) {
+    return undefined;
+  }
+
+  const images = await db
+    .select({
+      src: productImages.src,
+      alt: productImages.alt,
+      position: productImages.position,
+    })
+    .from(productImages)
+    .where(eq(productImages.productId, product.id))
+    .orderBy(asc(productImages.position));
+
+  return {
+    id: product.id,
+    slug: product.slug,
+    sku: product.sku,
+    name: product.name,
+    subtitle: product.subtitle,
+    category: {
+      name: product.categoryName,
+      slug: product.categorySlug,
+    },
+    priceInCents: product.priceInCents,
+    currency: product.currency,
+    images,
+    isNew: product.isNew,
+    stockQuantity: product.stockQuantity,
+    isSoldOut: product.stockQuantity <= 0,
+  };
 }
