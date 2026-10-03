@@ -129,7 +129,7 @@ export default async function ProductPage(
         <div className="page-shell grid h-20 grid-cols-[1fr_auto_1fr] items-center border-b border-line md:h-24">
           <nav aria-label="Primary" className="desktop-only flex items-center gap-7">
             <Link className="link-nav" href="/#new-arrivals">New in</Link>
-            <Link className="link-nav" href="/#collections">Collections</Link>
+            <Link className="link-nav" href="/collections">Collections</Link>
             <Link className="link-nav" href="/#story">The atelier</Link>
           </nav>
 
@@ -138,7 +138,7 @@ export default async function ProductPage(
             <div className="fixed inset-x-0 top-20 border-b border-line bg-canvas px-gutter py-8 text-ink shadow-xl">
               <nav aria-label="Mobile" className="flex flex-col gap-6">
                 <Link className="type-subheading" href="/#new-arrivals">New in</Link>
-                <Link className="type-subheading" href="/#collections">Collections</Link>
+                <Link className="type-subheading" href="/collections">Collections</Link>
                 <Link className="type-subheading" href="/#story">The atelier</Link>
               </nav>
             </div>
@@ -163,7 +163,7 @@ export default async function ProductPage(
         <nav aria-label="Breadcrumb" className="type-label flex items-center gap-2 text-ink-muted">
           <Link href="/" className="no-underline hover:text-ink">Home</Link>
           <span aria-hidden="true">/</span>
-          <Link href="/#new-arrivals" className="no-underline hover:text-ink">{product.category.name}</Link>
+          <Link href={`/collections?category=${product.category.slug}`} className="no-underline hover:text-ink">{product.category.name}</Link>
           <span aria-hidden="true">/</span>
           <span className="text-ink" aria-current="page">{product.name}</span>
         </nav>
@@ -274,7 +274,7 @@ export default async function ProductPage(
                 <p className="type-label mb-4 text-ink-muted">The edit continues</p>
                 <h2 className="type-heading">You may also like</h2>
               </div>
-              <Link href="/#new-arrivals" className="link-nav desktop-only">View all pieces</Link>
+              <Link href="/collections" className="link-nav desktop-only">View all pieces</Link>
             </div>
             <div className="grid grid-cols-2 gap-x-3 gap-y-10 md:grid-cols-3 md:gap-6">
               {relatedProducts.map((item) => (

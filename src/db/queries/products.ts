@@ -32,6 +32,17 @@ export type ProductDetail = Omit<HomepageProduct, "imageSrc" | "imageAlt"> & {
   }[];
 };
 
+export type CollectionCategory = {
+  name: string;
+  slug: string;
+};
+
+export type CollectionCatalog = {
+  activeCategory?: CollectionCategory;
+  categories: CollectionCategory[];
+  products: HomepageProduct[];
+};
+
 export async function getHomepageProducts(): Promise<HomepageProduct[]> {
   const stockQuantity = sql<number>`coalesce(${stock.quantity}, 0)`.mapWith(
     Number,
@@ -147,5 +158,81 @@ export async function getProductBySlug(
     isNew: product.isNew,
     stockQuantity: product.stockQuantity,
     isSoldOut: product.stockQuantity <= 0,
+  };
+}
+
+export async function getCollectionCatalog(
+  categorySlug?: string,
+): Promise<CollectionCatalog | undefined> {
+  const catalogCategories = await db
+    .select({ name: categories.name, slug: categories.slug })
+    .from(categories)
+    .orderBy(asc(categories.name));
+
+  const activeCategory = categorySlug
+    ? catalogCategories.find((category) => category.slug === categorySlug)
+    : undefined;
+
+  if (categorySlug && !activeCategory) {
+    return undefined;
+  }
+
+  const stockQuantity = sql<number>`coalesce(${stock.quantity}, 0)`.mapWith(
+    Number,
+  );
+  const conditions = [eq(products.isPublished, true)];
+
+  if (activeCategory) {
+    conditions.push(eq(categories.slug, activeCategory.slug));
+  }
+
+  const rows = await db
+    .select({
+      id: products.id,
+      slug: products.slug,
+      name: products.name,
+      subtitle: products.subtitle,
+      categoryName: categories.name,
+      categorySlug: categories.slug,
+      priceInCents: products.priceInCents,
+      currency: products.currency,
+      imageSrc: productImages.src,
+      imageAlt: productImages.alt,
+      isNew: products.isNew,
+      stockQuantity,
+    })
+    .from(products)
+    .innerJoin(categories, eq(products.categoryId, categories.id))
+    .innerJoin(
+      productImages,
+      and(
+        eq(products.id, productImages.productId),
+        eq(productImages.position, 1),
+      ),
+    )
+    .leftJoin(stock, eq(products.id, stock.productId))
+    .where(and(...conditions))
+    .orderBy(asc(products.name));
+
+  return {
+    activeCategory,
+    categories: catalogCategories,
+    products: rows.map((product) => ({
+      id: product.id,
+      slug: product.slug,
+      name: product.name,
+      subtitle: product.subtitle,
+      category: {
+        name: product.categoryName,
+        slug: product.categorySlug,
+      },
+      priceInCents: product.priceInCents,
+      currency: product.currency,
+      imageSrc: product.imageSrc,
+      imageAlt: product.imageAlt,
+      isNew: product.isNew,
+      stockQuantity: product.stockQuantity,
+      isSoldOut: product.stockQuantity <= 0,
+    })),
   };
 }

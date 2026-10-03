@@ -49,8 +49,8 @@ export default async function Home() {
         </a>
         <div className="page-shell grid h-20 grid-cols-[1fr_auto_1fr] items-center border-b border-white/30 md:h-24">
           <nav aria-label="Primary" className="desktop-only flex items-center gap-7">
-            <a className="link-nav" href="#new-arrivals">New in</a>
-            <a className="link-nav" href="#collections">Collections</a>
+            <Link className="link-nav" href="/collections">New in</Link>
+            <Link className="link-nav" href="/collections">Collections</Link>
             <a className="link-nav" href="#story">The atelier</a>
           </nav>
 
@@ -58,8 +58,8 @@ export default async function Home() {
             <summary className="type-label list-none py-3">Menu</summary>
             <div className="fixed inset-x-0 top-20 border-b border-line bg-canvas px-gutter py-8 text-ink shadow-xl">
               <nav aria-label="Mobile" className="flex flex-col gap-6">
-                <a className="type-subheading" href="#new-arrivals">New in</a>
-                <a className="type-subheading" href="#collections">Collections</a>
+                <Link className="type-subheading" href="/collections">New in</Link>
+                <Link className="type-subheading" href="/collections">Collections</Link>
                 <a className="type-subheading" href="#story">The atelier</a>
               </nav>
             </div>
@@ -95,7 +95,7 @@ export default async function Home() {
             <p className="type-label mb-5">Autumn / Winter 2026</p>
             <h1 className="type-display max-w-[10ch]">Form, found in motion.</h1>
             <div className="mt-8 flex flex-wrap gap-3">
-              <a href="#new-arrivals" className="button button-fluid-mobile bg-white text-ink hover:bg-[#e8e6e0]">Shop the collection</a>
+              <Link href="/collections" className="button button-fluid-mobile bg-white text-ink hover:bg-[#e8e6e0]">Shop the collection</Link>
               <a href="#story" className="button button-fluid-mobile border border-white/70 text-white hover:bg-white hover:text-ink">Discover the story</a>
             </div>
           </div>
@@ -110,14 +110,14 @@ export default async function Home() {
               <p className="type-label mb-4 text-ink-muted">Explore the house</p>
               <h2 className="type-heading">Two points of view</h2>
             </div>
-            <a className="link-nav desktop-only" href="#new-arrivals">View all collections</a>
+            <Link className="link-nav desktop-only" href="/collections">View all collections</Link>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 md:gap-6">
-            <a href="#new-arrivals" className="group relative min-h-[33rem] overflow-hidden bg-surface-subtle text-white no-underline md:min-h-[48rem]">
+            <Link href="/collections" className="group relative min-h-[33rem] overflow-hidden bg-surface-subtle text-white no-underline md:min-h-[48rem]">
               <Image
                 src="/collection-women.jpg"
-                alt="A considered edit of womenswear on a clothing rail"
+                alt="Woman in sunglasses holding shopping bags"
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover transition duration-700 ease-out group-hover:scale-[1.025]"
@@ -130,12 +130,12 @@ export default async function Home() {
                 </div>
                 <span className="grid size-11 shrink-0 place-items-center rounded-full border border-white/70 transition group-hover:bg-white group-hover:text-ink"><ArrowIcon /></span>
               </div>
-            </a>
+            </Link>
 
-            <a href="#new-arrivals" className="group relative min-h-[33rem] overflow-hidden bg-surface-subtle text-white no-underline md:min-h-[48rem]">
+            <Link href="/collections" className="group relative min-h-[33rem] overflow-hidden bg-surface-subtle text-white no-underline md:min-h-[48rem]">
               <Image
                 src="/collection-men.jpg"
-                alt="Man in refined tailoring walking through the city"
+                alt="Man adjusting a denim jacket outdoors"
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover object-center transition duration-700 ease-out group-hover:scale-[1.025]"
@@ -148,7 +148,7 @@ export default async function Home() {
                 </div>
                 <span className="grid size-11 shrink-0 place-items-center rounded-full border border-white/70 transition group-hover:bg-white group-hover:text-ink"><ArrowIcon /></span>
               </div>
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -160,7 +160,7 @@ export default async function Home() {
               <p className="type-label mb-4 text-ink-muted">Just arrived</p>
               <h2 className="type-heading">Objects of desire</h2>
             </div>
-            <a href="#" className="link-nav w-fit">Shop all new arrivals</a>
+            <Link href="/collections" className="link-nav w-fit">Shop all new arrivals</Link>
           </div>
 
           {products.length > 0 ? (

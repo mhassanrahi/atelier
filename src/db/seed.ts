@@ -31,7 +31,7 @@ const productSeed = [
     images: [
       {
         src: "/product-column-bag.jpg",
-        alt: "Structured tan leather handbag",
+        alt: "Structured teal leather handbag in an editorial still life",
         position: 1,
       },
     ],
@@ -50,7 +50,7 @@ const productSeed = [
     images: [
       {
         src: "/product-sculpted-court.jpg",
-        alt: "Black sculptural high heel shoe",
+        alt: "Floral-print high-heeled shoes against a blue background",
         position: 1,
       },
     ],
@@ -69,7 +69,7 @@ const productSeed = [
     images: [
       {
         src: "/product-solstice-frame.jpg",
-        alt: "Dark sunglasses on a warm neutral surface",
+        alt: "Round sunglasses with dark green lenses on a pale surface",
         position: 1,
       },
     ],
@@ -88,7 +88,7 @@ const productSeed = [
     images: [
       {
         src: "/product-arc-mini.jpg",
-        alt: "Small cream leather handbag",
+        alt: "Small red leather handbag on a display plinth",
         position: 1,
       },
     ],
@@ -144,8 +144,9 @@ async function seedCatalog() {
       await seedDb
         .insert(productImages)
         .values({ ...image, productId: savedProduct.id })
-        .onConflictDoNothing({
+        .onConflictDoUpdate({
           target: [productImages.productId, productImages.position],
+          set: { src: image.src, alt: image.alt },
         });
     }
 
