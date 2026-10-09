@@ -12,7 +12,7 @@ import {
   stock,
 } from "@/db/schema";
 
-export type HomepageProduct = {
+export type ProductCardProduct = {
   id: string;
   slug: string;
   name: string;
@@ -30,7 +30,7 @@ export type HomepageProduct = {
   isSoldOut: boolean;
 };
 
-export type ProductDetail = Omit<HomepageProduct, "imageSrc" | "imageAlt"> & {
+export type ProductDetail = Omit<ProductCardProduct, "imageSrc" | "imageAlt"> & {
   sku: string;
   description: string;
   details: string[];
@@ -60,10 +60,10 @@ export type CollectionCatalog = {
     imagePosition: string;
     imageCaption: string;
   };
-  products: HomepageProduct[];
+  products: ProductCardProduct[];
 };
 
-export async function getHomepageProducts(): Promise<HomepageProduct[]> {
+export async function getHomepageProducts(): Promise<ProductCardProduct[]> {
   const stockQuantity = sql<number>`coalesce(${stock.quantity}, 0)`.mapWith(
     Number,
   );
@@ -119,6 +119,14 @@ export async function getHomepageProducts(): Promise<HomepageProduct[]> {
     stockQuantity: product.stockQuantity,
     isSoldOut: product.stockQuantity <= 0,
   }));
+}
+
+export function normalizeProductSearchQuery(query: string) {
+  return query.trim().replace(/\s+/g, " ").slice(0, 100);
+}
+
+function escapeLikePattern(value: string) {
+  return value.replace(/[\\%_]/g, "\\$&");
 }
 
 export async function getProductBySlug(
@@ -197,17 +205,19 @@ export async function getProductBySlug(
 
 export async function getCollectionCatalog(
   categorySlug?: string,
+  searchQuery?: string,
 ): Promise<CollectionCatalog | undefined> {
+  const normalizedSearchQuery = normalizeProductSearchQuery(searchQuery ?? "");
   const categoryRows = await db
     .select({ id: categories.id, name: categories.name, slug: categories.slug })
     .from(categories)
     .orderBy(asc(categories.name));
 
-  const activeCategoryRow = categorySlug
+  const activeCategoryRow = categorySlug && !normalizedSearchQuery
     ? categoryRows.find((category) => category.slug === categorySlug)
     : undefined;
 
-  if (categorySlug && !activeCategoryRow) {
+  if (categorySlug && !normalizedSearchQuery && !activeCategoryRow) {
     return undefined;
   }
 
@@ -223,6 +233,18 @@ export async function getCollectionCatalog(
 
   if (activeCategoryRow) {
     conditions.push(eq(categories.id, activeCategoryRow.id));
+  }
+
+  for (const term of normalizedSearchQuery.split(" ").filter(Boolean)) {
+    const pattern = `%${escapeLikePattern(term)}%`;
+
+    conditions.push(
+      or(
+        sql<boolean>`${products.name} ilike ${pattern} escape ${"\\"}`,
+        sql<boolean>`${products.subtitle} ilike ${pattern} escape ${"\\"}`,
+        sql<boolean>`${categories.name} ilike ${pattern} escape ${"\\"}`,
+      )!,
+    );
   }
 
   const [rows, editorialRows] = await Promise.all([

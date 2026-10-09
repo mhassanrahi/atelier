@@ -3,23 +3,21 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CollectionSearchForm } from "@/components/collection-search-form";
+import { ProductCard } from "@/components/product-card";
 import { SiteFooter } from "@/components/site-footer";
-import { getCollectionCatalog } from "@/db/queries/products";
+import {
+  getCollectionCatalog,
+  normalizeProductSearchQuery,
+} from "@/db/queries/products";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+const collectionMetadata: Metadata = {
   title: "The Collection — Atelier",
   description:
     "Explore Atelier's collection of bags, footwear, and eyewear, shaped by modern form and enduring craft.",
 };
-
-function formatPrice(priceInCents: number, currency: string) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  }).format(priceInCents / 100);
-}
 
 function BagIcon() {
   return (
@@ -38,24 +36,68 @@ function ArrowIcon() {
   );
 }
 
-type CollectionsPageProps = {
-  searchParams: Promise<{ category?: string | string[] }>;
+type CollectionSearchParams = {
+  category?: string | string[];
+  focus?: string | string[];
+  q?: string | string[];
 };
+
+type CollectionsPageProps = {
+  searchParams: Promise<CollectionSearchParams>;
+};
+
+function firstParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export async function generateMetadata({
+  searchParams,
+}: CollectionsPageProps): Promise<Metadata> {
+  const query = normalizeProductSearchQuery(
+    firstParam((await searchParams).q) ?? "",
+  );
+
+  if (!query) {
+    return collectionMetadata;
+  }
+
+  return {
+    title: `Search results for “${query}” — Atelier`,
+    description: `Search results for ${query} from Atelier's collection.`,
+    robots: {
+      index: false,
+      follow: true,
+    },
+  };
+}
 
 export default async function CollectionsPage(
   props: CollectionsPageProps,
 ) {
   const searchParams = await props.searchParams;
-  const categoryParam = searchParams.category;
-  const categorySlug = typeof categoryParam === "string" ? categoryParam : undefined;
-  const catalog = await getCollectionCatalog(categorySlug);
+  const query = normalizeProductSearchQuery(firstParam(searchParams.q) ?? "");
+  const categorySlug = query ? undefined : firstParam(searchParams.category);
+  const shouldFocusSearch = firstParam(searchParams.focus) === "search";
+  const isSearchMode = Boolean(query) || shouldFocusSearch;
+  const catalog = await getCollectionCatalog(categorySlug, query);
 
   if (!catalog) {
     notFound();
   }
 
   const editorial = catalog.editorial;
-  const collectionName = catalog.activeCategory?.name ?? "All pieces";
+  const collectionName = query
+    ? `Results for “${query}”`
+    : catalog.activeCategory?.name ?? "All pieces";
+  let searchFormKey = `category:${catalog.activeCategory?.slug ?? "all"}`;
+
+  if (query) {
+    searchFormKey = `search:${query}`;
+  }
+
+  if (shouldFocusSearch) {
+    searchFormKey = "focused-search";
+  }
 
   return (
     <main>
@@ -69,7 +111,7 @@ export default async function CollectionsPage(
         <div className="page-shell grid h-20 grid-cols-[1fr_auto_1fr] items-center border-b border-line md:h-24">
           <nav aria-label="Primary" className="desktop-only flex items-center gap-7">
             <Link className="link-nav" href="/collections">New in</Link>
-            <Link className="link-nav" href="/collections" aria-current="page">Collections</Link>
+            <Link className="link-nav" href="/collections" aria-current={isSearchMode ? undefined : "page"}>Collections</Link>
             <Link className="link-nav" href="/#story">The atelier</Link>
           </nav>
 
@@ -78,8 +120,9 @@ export default async function CollectionsPage(
             <div className="fixed inset-x-0 top-20 border-b border-line bg-canvas px-gutter py-8 text-ink shadow-xl">
               <nav aria-label="Mobile" className="flex flex-col gap-6">
                 <Link className="type-subheading" href="/collections">New in</Link>
-                <Link className="type-subheading" href="/collections" aria-current="page">Collections</Link>
+                <Link className="type-subheading" href="/collections" aria-current={isSearchMode ? undefined : "page"}>Collections</Link>
                 <Link className="type-subheading" href="/#story">The atelier</Link>
+                <Link className="type-subheading" href="/collections?focus=search#catalog-search" aria-current={isSearchMode ? "page" : undefined}>Search</Link>
               </nav>
             </div>
           </details>
@@ -89,7 +132,7 @@ export default async function CollectionsPage(
           </Link>
 
           <nav aria-label="Customer" className="flex items-center justify-end gap-5 md:gap-7">
-            <Link className="link-nav desktop-only" href="/#newsletter">Search</Link>
+            <Link className="link-nav desktop-only" href="/collections?focus=search#catalog-search" aria-current={isSearchMode ? "page" : undefined}>Search</Link>
             <Link className="link-nav desktop-only" href="/#footer">Account</Link>
             <span aria-label="Shopping bag, 0 items" className="inline-flex items-center gap-2">
               <BagIcon />
@@ -133,7 +176,9 @@ export default async function CollectionsPage(
         <div className="page-shell">
           <div className="flex flex-col gap-7 border-b border-line pb-8 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="type-label mb-3 text-ink-muted">Shop the collection</p>
+              <p className="type-label mb-3 text-ink-muted">
+                {query ? "Search results" : "Shop the collection"}
+              </p>
               <h2 className="type-heading">{collectionName}</h2>
             </div>
             <p className="type-label text-ink-muted">
@@ -141,10 +186,16 @@ export default async function CollectionsPage(
             </p>
           </div>
 
+          <CollectionSearchForm
+            key={searchFormKey}
+            query={query}
+            shouldFocus={shouldFocusSearch}
+          />
+
           <nav aria-label="Filter collection" className="flex gap-x-7 gap-y-3 overflow-x-auto border-b border-line py-6">
             <Link
               href="/collections"
-              aria-current={!catalog.activeCategory ? "page" : undefined}
+              aria-current={!query && !catalog.activeCategory ? "page" : undefined}
               className="link-nav shrink-0"
             >
               All
@@ -163,33 +214,26 @@ export default async function CollectionsPage(
 
           {catalog.products.length > 0 ? (
             <div className="product-grid mt-10 md:mt-14">
-              {catalog.products.map((product) => (
-                <article key={product.id}>
-                  <Link href={`/products/${product.slug}`} aria-label={`View ${product.name}`} className="group block no-underline">
-                    <div className="media-frame aspect-[4/5]">
-                      <Image
-                        src={product.imageSrc}
-                        alt={product.imageAlt}
-                        fill
-                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                        className="object-cover transition duration-700 ease-out group-hover:scale-[1.025]"
-                      />
-                      {product.isSoldOut ? (
-                        <span className="type-label absolute left-4 top-4 bg-surface px-3 py-2">Sold out</span>
-                      ) : product.isNew ? (
-                        <span className="type-label absolute left-4 top-4 bg-surface px-3 py-2">New</span>
-                      ) : null}
-                    </div>
-                    <div className="mt-5 flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="font-medium">{product.name}</h3>
-                        <p className="mt-1 text-sm text-ink-muted">{product.subtitle}</p>
-                      </div>
-                      <p className="shrink-0 text-sm">{formatPrice(product.priceInCents, product.currency)}</p>
-                    </div>
-                  </Link>
-                </article>
+              {catalog.products.map((product, index) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  eager={Boolean(query) && index === 0}
+                />
               ))}
+            </div>
+          ) : query ? (
+            <div className="py-20 text-center md:py-28">
+              <p className="type-subheading">No pieces found.</p>
+              <p className="mx-auto mt-4 max-w-lg text-ink-muted">
+                Try a different name, style, or category, or clear the search to see every piece.
+              </p>
+              <Link
+                href="/collections?focus=search#catalog-search"
+                className="button button-secondary mt-8"
+              >
+                Clear search
+              </Link>
             </div>
           ) : (
             <div className="py-24 text-center">

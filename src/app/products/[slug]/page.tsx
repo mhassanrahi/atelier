@@ -85,6 +85,7 @@ export default async function ProductPage(
                 <Link className="type-subheading" href="/#new-arrivals">New in</Link>
                 <Link className="type-subheading" href="/collections">Collections</Link>
                 <Link className="type-subheading" href="/#story">The atelier</Link>
+                <Link className="type-subheading" href="/collections?focus=search#catalog-search">Search</Link>
               </nav>
             </div>
           </details>
@@ -94,7 +95,7 @@ export default async function ProductPage(
           </Link>
 
           <nav aria-label="Customer" className="flex items-center justify-end gap-5 md:gap-7">
-            <Link className="link-nav desktop-only" href="/#newsletter">Search</Link>
+            <Link className="link-nav desktop-only" href="/collections?focus=search#catalog-search">Search</Link>
             <Link className="link-nav desktop-only" href="/#footer">Account</Link>
             <span aria-label="Shopping bag, 0 items" className="inline-flex items-center gap-2">
               <BagIcon />
