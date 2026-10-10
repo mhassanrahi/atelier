@@ -26,6 +26,7 @@ export function SiteHeader() {
               <Link className="type-subheading" href="/collections">Collections</Link>
               <a className="type-subheading" href="#story">The atelier</a>
               <Link className="type-subheading" href="/collections?focus=search#catalog-search">Search</Link>
+              <Link className="type-subheading" href="/account">Account</Link>
             </nav>
           </div>
         </details>
@@ -40,7 +41,7 @@ export function SiteHeader() {
 
         <nav aria-label="Customer" className="flex items-center justify-end gap-5 md:gap-7">
           <Link className="link-nav desktop-only" href="/collections?focus=search#catalog-search">Search</Link>
-          <a className="link-nav desktop-only" href="#footer">Account</a>
+          <Link className="link-nav desktop-only" href="/account">Account</Link>
           <a
             aria-label="Shopping bag, 0 items"
             href="#new-arrivals"

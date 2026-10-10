@@ -123,6 +123,7 @@ export default async function CollectionsPage(
                 <Link className="type-subheading" href="/collections" aria-current={isSearchMode ? undefined : "page"}>Collections</Link>
                 <Link className="type-subheading" href="/#story">The atelier</Link>
                 <Link className="type-subheading" href="/collections?focus=search#catalog-search" aria-current={isSearchMode ? "page" : undefined}>Search</Link>
+                <Link className="type-subheading" href="/account">Account</Link>
               </nav>
             </div>
           </details>
@@ -133,7 +134,7 @@ export default async function CollectionsPage(
 
           <nav aria-label="Customer" className="flex items-center justify-end gap-5 md:gap-7">
             <Link className="link-nav desktop-only" href="/collections?focus=search#catalog-search" aria-current={isSearchMode ? "page" : undefined}>Search</Link>
-            <Link className="link-nav desktop-only" href="/#footer">Account</Link>
+            <Link className="link-nav desktop-only" href="/account">Account</Link>
             <span aria-label="Shopping bag, 0 items" className="inline-flex items-center gap-2">
               <BagIcon />
               <span className="type-label">0</span>

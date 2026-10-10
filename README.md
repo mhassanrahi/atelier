@@ -18,6 +18,7 @@ Minimal eCommerce application foundation built with Next.js, TypeScript, Tailwin
 - `npm run build` — create a production build
 - `npm run lint` — run ESLint
 - `npm run typecheck` — run the TypeScript compiler without emitting files
+- `npm run auth:schema` — regenerate the Better Auth Drizzle schema with the pinned 1.7.7 CLI
 - `npm run db:generate` — generate Drizzle migrations from the schema
 - `npm run db:migrate` — apply generated migrations
 - `npm run db:push` — push schema changes directly to the database
@@ -27,7 +28,13 @@ Minimal eCommerce application foundation built with Next.js, TypeScript, Tailwin
 
 - `src/db/index.ts` creates the Neon-backed Drizzle client.
 - `src/db/schema.ts` defines the categories, products, and stock tables.
+- `src/db/auth-schema.ts` defines the Better Auth users, sessions, accounts, and verification tables.
 - `src/db/queries/products.ts` contains the server-only homepage catalog query.
 - `src/lib/auth.ts` creates the Better Auth server instance with the Drizzle adapter.
+- `src/lib/auth-session.ts` centralizes authenticated customer and admin authorization checks.
 - `src/app/api/auth/[...all]/route.ts` mounts the Better Auth API handler.
 - `drizzle.config.ts` configures Drizzle Kit for Neon Postgres.
+
+## Authentication
+
+Email/password authentication is available at `/sign-up` and `/sign-in`. Sessions are stored in PostgreSQL, remain valid for seven days, and refresh after a day of activity. New accounts always receive the server-owned `customer` role.
