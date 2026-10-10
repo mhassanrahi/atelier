@@ -16,7 +16,7 @@ export default async function AccountPage() {
 
   return (
     <div className="min-h-screen">
-      <AccountHeader />
+      <AccountHeader current="account" />
       <main id="main-content" className="page-shell py-14 md:py-24">
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,30rem)] lg:items-start lg:gap-24">
           <div>

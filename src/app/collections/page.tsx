@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { CollectionSearchForm } from "@/components/collection-search-form";
+import { CartLink } from "@/components/cart/cart-link";
 import { ProductCard } from "@/components/product-card";
 import { SiteFooter } from "@/components/site-footer";
 import {
@@ -18,15 +19,6 @@ const collectionMetadata: Metadata = {
   description:
     "Explore Atelier's collection of bags, footwear, and eyewear, shaped by modern form and enduring craft.",
 };
-
-function BagIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none">
-      <path d="M5.5 8.5h13l-1 11h-11l-1-11Z" stroke="currentColor" strokeWidth="1.35" />
-      <path d="M9 9V6.5a3 3 0 0 1 6 0V9" stroke="currentColor" strokeWidth="1.35" />
-    </svg>
-  );
-}
 
 function ArrowIcon() {
   return (
@@ -135,10 +127,7 @@ export default async function CollectionsPage(
           <nav aria-label="Customer" className="flex items-center justify-end gap-5 md:gap-7">
             <Link className="link-nav desktop-only" href="/collections?focus=search#catalog-search" aria-current={isSearchMode ? "page" : undefined}>Search</Link>
             <Link className="link-nav desktop-only" href="/account">Account</Link>
-            <span aria-label="Shopping bag, 0 items" className="inline-flex items-center gap-2">
-              <BagIcon />
-              <span className="type-label">0</span>
-            </span>
+            <CartLink />
           </nav>
         </div>
       </header>

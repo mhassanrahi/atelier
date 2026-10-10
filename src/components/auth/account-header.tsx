@@ -1,6 +1,12 @@
 import Link from "next/link";
 
-export function AccountHeader() {
+import { CartLink } from "@/components/cart/cart-link";
+
+type AccountHeaderProps = {
+  current?: "account" | "cart";
+};
+
+export function AccountHeader({ current }: AccountHeaderProps) {
   return (
     <header className="border-b border-line bg-canvas">
       <a
@@ -9,20 +15,35 @@ export function AccountHeader() {
       >
         Skip to content
       </a>
-      <div className="page-shell grid h-20 grid-cols-[1fr_auto_1fr] items-center md:h-24">
-        <Link className="link-nav justify-self-start" href="/collections">
-          Collection
-        </Link>
+      <div className="page-shell relative flex h-20 items-center justify-between md:h-24">
+        <div className="justify-self-start">
+          <Link className="link-nav desktop-only" href="/collections">
+            Collection
+          </Link>
+          <Link
+            className="link-nav mobile-only"
+            href={current === "cart" ? "/account" : "/collections"}
+          >
+            {current === "cart" ? "Account" : "Collection"}
+          </Link>
+        </div>
         <Link
           href="/"
           aria-label="Atelier home"
-          className="font-display text-xl tracking-[0.18em] no-underline md:text-2xl"
+          className="absolute left-1/2 -translate-x-1/2 font-display text-xl tracking-[0.18em] no-underline md:text-2xl"
         >
           ATELIER
         </Link>
-        <Link className="link-nav justify-self-end" href="/account">
-          Account
-        </Link>
+        <nav aria-label="Customer" className="flex items-center justify-self-end gap-4 md:gap-6">
+          <Link
+            className="link-nav desktop-only"
+            href="/account"
+            aria-current={current === "account" ? "page" : undefined}
+          >
+            Account
+          </Link>
+          <CartLink current={current === "cart"} />
+        </nav>
       </div>
     </header>
   );

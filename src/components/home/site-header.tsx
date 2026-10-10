@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { BagIcon } from "@/components/home/icons";
+import { CartLink } from "@/components/cart/cart-link";
 
 export function SiteHeader() {
   return (
@@ -42,14 +42,7 @@ export function SiteHeader() {
         <nav aria-label="Customer" className="flex items-center justify-end gap-5 md:gap-7">
           <Link className="link-nav desktop-only" href="/collections?focus=search#catalog-search">Search</Link>
           <Link className="link-nav desktop-only" href="/account">Account</Link>
-          <a
-            aria-label="Shopping bag, 0 items"
-            href="#new-arrivals"
-            className="inline-flex items-center gap-2 no-underline"
-          >
-            <BagIcon />
-            <span className="type-label">0</span>
-          </a>
+          <CartLink />
         </nav>
       </div>
     </header>
