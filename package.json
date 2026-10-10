@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test": "node --test src/lib/cart-model.test.ts",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "auth:schema": "npx auth@1.7.7 generate --config ./auth.cli.mts --adapter drizzle --dialect postgresql --output ./src/db/auth-schema.ts --yes",
